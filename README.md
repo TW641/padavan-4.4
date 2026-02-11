@@ -105,6 +105,41 @@ We support both **GitHub Actions** (for ease of use) and **Manual Compilation**.
 
 ### Option A: GitHub Actions (Recommended)
 
+## 🛠️ Usage (How to Build)
+
+This workflow uses **GitHub Actions** to build firmware in the cloud. You don't need a Linux PC!
+
+### 1. Start the Workflow
+1.  Go to the **[Actions](../../actions)** tab in this repository.
+2.  Select the workflow **"Custom-Router-Build-Final-Fix"** (or `CI.yml`) from the left sidebar.
+3.  Click the **Run workflow** button on the right.
+
+### 2. Configure Your Build (Interactive Inputs)
+You will see a menu with the following options. **Customize it to your liking!**
+
+* **target_select** (Required):
+    * Choose your router model from the list (e.g., `K2P`, `MI-R3P`, `RM2100`...).
+    * *Note: This list includes all supported 4.4 kernel devices.*
+
+* **language_select** (New!):
+    * `English_Only`: Keeps the interface clean and lightweight.
+    * `CN (繁體中文)` / `RU` / `ES` etc.: Automatically adds your selected language pack.
+
+* **nanoversion**:
+    * `true`: Performs extreme size optimization (removes unused modules) to fit into small flash memory.
+
+* **customization**:
+    * Set your default WiFi SSID, Password, and Login credentials here (JSON format).
+
+* **toolchain_select**:
+    * Choose between `Default` (hanwckf/linux-4.4) or `Padavan-NG` toolchains.
+
+### 3. Wait & Download
+1.  Click the green **Run workflow** button.
+2.  The build process usually takes **15 to 40 minutes**.
+3.  When the circle turns **Green (Success)**, click on the task.
+4.  Scroll down to the **Artifacts** section to download your firmware `.zip` file.
+
 Just go to the `Actions` tab in this repository, select `Custom-Router-Build-Final-Fix`, and choose:
 
 1.  **Target Model**: (e.g., `K2P`, `MI-R3P`, `RM2100`...)
