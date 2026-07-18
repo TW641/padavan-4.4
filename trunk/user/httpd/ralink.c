@@ -974,8 +974,8 @@ print_apcli_wds_header(webs_t wp, const char *caption)
 
 	ret += websWrite(wp, caption);
 	ret += websWrite(wp, "----------------------------------------\n");
-	ret += websWrite(wp, "%-19s%-8s%-4s%-4s%-4s%-5s%-5s%-6s%-5s\n",
-				   "BSSID", "PhyMode", " BW", "MCS", "SGI", "LDPC", "STBC", "TRate", "RSSI");
+	ret += websWrite(wp, "%-19s%-8s%-4s%-4s%-4s%-5s%-5s%-7s%-7s%-5s\n",
+				   "BSSID", "PhyMode", " BW", "MCS", "SGI", "LDPC", "STBC", "TxRate", "RxRate", "RSSI");
 
 	return ret;
 }
@@ -1003,6 +1003,7 @@ static int
 print_apcli_wds_entry(webs_t wp, RT_802_11_MAC_ENTRY *me, int num_ss_rx)
 {
 	int ret, rssi;
+	MACHTTRANSMIT_SETTING RxRate;
 
 	ret = 0;
 
@@ -1018,7 +1019,10 @@ print_apcli_wds_entry(webs_t wp, RT_802_11_MAC_ENTRY *me, int num_ss_rx)
 			rssi = (int)me->AvgRssi2;
 	}
 
-	ret += websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X  %-7s %3s %3d %3s %4s %4s %4dM %4d\n",
+	memset(&RxRate, 0, sizeof(RxRate));
+	RxRate.word = me->LastRxRate;
+
+	ret += websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X  %-7s %3s %3d %3s %4s %4s %5dM %5dM %4d\n",
 			me->Addr[0], me->Addr[1], me->Addr[2],
 			me->Addr[3], me->Addr[4], me->Addr[5],
 			GetPhyMode(me->TxRate.field.MODE),
@@ -1027,7 +1031,7 @@ print_apcli_wds_entry(webs_t wp, RT_802_11_MAC_ENTRY *me, int num_ss_rx)
 			me->TxRate.field.ShortGI ? "YES" : "NO",
 			me->TxRate.field.ldpc ? "YES" : "NO",
 			me->TxRate.field.STBC ? "YES" : "NO",
-			getRate(me->TxRate),
+			getRate(me->TxRate), getRate(RxRate),
 			rssi
 		);
 
@@ -1047,10 +1051,12 @@ print_sta_list(webs_t wp, RT_802_11_MAC_TABLE *mp, int num_ss_rx, int ap_idx)
 	ret += websWrite(wp, "\nAP %s Stations List\n", (ap_idx == 0) ? "Main" : "Guest");
 #endif
 	ret += websWrite(wp, "----------------------------------------\n");
-	ret += websWrite(wp, "%-19s%-8s%-4s%-4s%-4s%-5s%-5s%-6s%-5s%-4s%-12s\n",
-			   "MAC", "PhyMode", " BW", "MCS", "SGI", "LDPC", "STBC", "TRate", "RSSI", "PSM", "Connect Time");
+	ret += websWrite(wp, "%-19s%-8s%-4s%-4s%-4s%-5s%-5s%-7s%-7s%-5s%-4s%-12s\n",
+			   "MAC", "PhyMode", " BW", "MCS", "SGI", "LDPC", "STBC", "TxRate", "RxRate", "RSSI", "PSM", "Connect Time");
 
 	for (i = 0; i < mp->Num; i++) {
+		MACHTTRANSMIT_SETTING RxRate;
+
 		if ((int)mp->Entry[i].ApIdx != ap_idx)
 			continue;
 		
@@ -1068,8 +1074,11 @@ print_sta_list(webs_t wp, RT_802_11_MAC_TABLE *mp, int num_ss_rx, int ap_idx)
 			if ((int)mp->Entry[i].AvgRssi2 > rssi && mp->Entry[i].AvgRssi2 != 0)
 				rssi = (int)mp->Entry[i].AvgRssi2;
 		}
+
+		memset(&RxRate, 0, sizeof(RxRate));
+		RxRate.word = mp->Entry[i].LastRxRate;
 		
-		ret += websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X  %-7s %3s %3d %3s %4s %4s %4dM %4d %3s %02d:%02d:%02d\n",
+		ret += websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X  %-7s %3s %3d %3s %4s %4s %5dM %5dM %4d %3s %02d:%02d:%02d\n",
 				mp->Entry[i].Addr[0], mp->Entry[i].Addr[1], mp->Entry[i].Addr[2],
 				mp->Entry[i].Addr[3], mp->Entry[i].Addr[4], mp->Entry[i].Addr[5],
 				GetPhyMode(mp->Entry[i].TxRate.field.MODE),
@@ -1078,7 +1087,7 @@ print_sta_list(webs_t wp, RT_802_11_MAC_TABLE *mp, int num_ss_rx, int ap_idx)
 				mp->Entry[i].TxRate.field.ShortGI ? "YES" : "NO",
 				mp->Entry[i].TxRate.field.ldpc ? "YES" : "NO",
 				mp->Entry[i].TxRate.field.STBC ? "YES" : "NO",
-				getRate(mp->Entry[i].TxRate),
+				getRate(mp->Entry[i].TxRate), getRate(RxRate),
 				rssi,
 				mp->Entry[i].Psm ? "YES" : "NO",
 				hr, min, sec
@@ -1120,10 +1129,12 @@ print_sta_list_inic(webs_t wp, RT_802_11_MAC_TABLE_INIC* mp, int num_ss_rx, int 
 
 	ret += websWrite(wp, "\nAP %s Stations List\n", (ap_idx == 0) ? "Main" : "Guest");
 	ret += websWrite(wp, "----------------------------------------\n");
-	ret += websWrite(wp, "%-19s%-8s%-4s%-4s%-4s%-5s%-5s%-6s%-5s%-4s%-12s\n",
-			   "MAC", "PhyMode", " BW", "MCS", "SGI", "LDPC", "STBC", "TRate", "RSSI", "PSM", "Connect Time");
+	ret += websWrite(wp, "%-19s%-8s%-4s%-4s%-4s%-5s%-5s%-7s%-7s%-5s%-4s%-12s\n",
+			   "MAC", "PhyMode", " BW", "MCS", "SGI", "LDPC", "STBC", "TxRate", "RxRate", "RSSI", "PSM", "Connect Time");
 
 	for (i = 0; i < mp->Num; i++) {
+		MACHTTRANSMIT_SETTING_INIC RxRate;
+
 		if ((int)mp->Entry[i].ApIdx != ap_idx)
 			continue;
 		
@@ -1137,8 +1148,11 @@ print_sta_list_inic(webs_t wp, RT_802_11_MAC_TABLE_INIC* mp, int num_ss_rx, int 
 			if ((int)mp->Entry[i].AvgRssi1 > rssi && mp->Entry[i].AvgRssi1 != 0)
 				rssi = (int)mp->Entry[i].AvgRssi1;
 		}
+
+		memset(&RxRate, 0, sizeof(RxRate));
+		RxRate.word = mp->Entry[i].LastRxRate;
 		
-		ret += websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X  %-7s %3s %3d %3s %4s %4s %4dM %4d %3s %02d:%02d:%02d\n",
+		ret += websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X  %-7s %3s %3d %3s %4s %4s %5dM %5dM %4d %3s %02d:%02d:%02d\n",
 				mp->Entry[i].Addr[0], mp->Entry[i].Addr[1], mp->Entry[i].Addr[2],
 				mp->Entry[i].Addr[3], mp->Entry[i].Addr[4], mp->Entry[i].Addr[5],
 				GetPhyMode(mp->Entry[i].TxRate.field.MODE),
@@ -1147,7 +1161,7 @@ print_sta_list_inic(webs_t wp, RT_802_11_MAC_TABLE_INIC* mp, int num_ss_rx, int 
 				mp->Entry[i].TxRate.field.ShortGI ? "YES" : "NO",
 				"NO",
 				mp->Entry[i].TxRate.field.STBC ? "YES" : "NO",
-				getRate_inic(mp->Entry[i].TxRate),
+				getRate_inic(mp->Entry[i].TxRate), getRate_inic(RxRate),
 				rssi,
 				mp->Entry[i].Psm ? "YES" : "NO",
 				hr, min, sec
