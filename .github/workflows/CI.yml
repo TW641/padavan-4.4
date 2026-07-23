@@ -1497,19 +1497,18 @@ jobs:
         run: |
           echo "::group::Setting up WebUI Language (Kernel 4.4)"
           
-          # 1. 取得參數
           SELECTED_LANG_OPTION="${{ inputs.language_select }}"
           TARGET_BOARD="${{ inputs.target_select }}"
-          
-          # Kernel 4.4 (hanwckf) 的 Template 路徑通常在這裡
           TEMPLATE_DIR="/opt/rt-n56u/trunk/configs/templates"
           CONFIG_PATH="$TEMPLATE_DIR/$TARGET_BOARD.config"
           
-          # 解析語言代碼 (例如 "CN (繁體中文)" -> "CN")
+          # 判斷並匯出 Release 用語言標籤變數
           if [ "$SELECTED_LANG_OPTION" == "English_Only" ]; then
             LANG_CODE="NONE"
+            echo "RELEASE_LANG=English Only" >> $GITHUB_ENV
           else
             LANG_CODE=$(echo "$SELECTED_LANG_OPTION" | cut -d' ' -f1)
+            echo "RELEASE_LANG=English + $SELECTED_LANG_OPTION" >> $GITHUB_ENV
           fi
           
           echo "🎯 Target Board: $TARGET_BOARD"
@@ -1518,23 +1517,15 @@ jobs:
           
           if [ -f "$CONFIG_PATH" ]; then
             echo "📝 Modifying Config..."
-            
-            # 2. 第一步：強制關閉所有非英文語言 (Reset to English Only)
-            # 邏輯：找到所有 CONFIG_FIRMWARE_INCLUDE_LANG_ 開頭且 =y 的行，加上 # 註解
             sed -i 's/^CONFIG_FIRMWARE_INCLUDE_LANG_.*=y/#&/' "$CONFIG_PATH"
             echo "✅ All non-English languages disabled (commented out)."
             
-            # 3. 第二步：啟用選定的語言
             if [ "$LANG_CODE" != "NONE" ]; then
               TARGET_KEY="CONFIG_FIRMWARE_INCLUDE_LANG_$LANG_CODE"
-              
-              # 檢查設定檔中是否有這一行 (無論是被註解還是未註解)
               if grep -q "$TARGET_KEY" "$CONFIG_PATH"; then
-                # 如果存在 (例如 #CONFIG_FIRMWARE_INCLUDE_LANG_CN=y)，則移除註解並設為 y
                 sed -i "s/^.*$TARGET_KEY.*/$TARGET_KEY=y/" "$CONFIG_PATH"
                 echo "✅ Enabled language: $LANG_CODE"
               else
-                # 如果完全不存在，則手動加入到檔案末尾
                 echo "$TARGET_KEY=y" >> "$CONFIG_PATH"
                 echo "✅ Appended language config: $LANG_CODE"
               fi
@@ -1542,10 +1533,8 @@ jobs:
               echo "ℹ️ Keeping English Only."
             fi
             
-            # 4. 驗證結果
             echo "🔍 Final Language Settings in $TARGET_BOARD.config:"
             grep "CONFIG_FIRMWARE_INCLUDE_LANG_" "$CONFIG_PATH" | grep -v "^#" || echo "(English Only)"
-            
           else
             echo "❌ Error: Template config not found at $CONFIG_PATH"
             echo "   Please check inputs.target_select matches the filename in trunk/configs/templates/"
@@ -1785,6 +1774,7 @@ jobs:
             * **padavan-4.4 CI YAML自動化雲端編譯韌體腳本介紹**: https://TW641.github.io/padavan-4.4/
             * **原始碼來源 Repo**: ${{ env.PADAVAN_REPO }}
             * **選擇機型**: ${{ inputs.target_select }}
+            * **WebUI 語言選項 (Custom Language Select)**: ${{ env.RELEASE_LANG }}
             * **編譯時間**: ${{ env.BUILD_TIME }} (Taipei Time)
             * **LAN IP**: ${{ env.LANIP }}
             * **工具鏈**: ${{ inputs.toolchain_select }}
