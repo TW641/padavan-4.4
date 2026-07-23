@@ -108,7 +108,8 @@ jobs:
 
       - name: ⬇️-Clone-Source-Code
         run: |
-          git clone --depth=1 https://github.com/TWShiyuLiou1997/padavan-4.4.git /opt/rt-n56u
+          git clone --depth=1 https://github.com/TW641/padavan-4.4.git /opt/rt-n56u
+          echo "PADAVAN_REPO=https://github.com/TW641/padavan-4.4" >> $GITHUB_ENV
 
       # =======================================================
       # [步驟 A] 統一準備資源 (只 Clone 一次！)
@@ -120,7 +121,7 @@ jobs:
           rm -rf /tmp/padavan-ng
           
           # 統一 Clone 到臨時目錄
-          git clone --depth=1 https://github.com/TWShiyuLiou1997/padavan-ng.git /tmp/padavan-ng
+          git clone --depth=1 https://github.com/TW641/padavan-ng.git /tmp/padavan-ng
           
           echo "✅ Reference repo ready at /tmp/padavan-ng"
           echo "::endgroup::"
@@ -1768,11 +1769,27 @@ jobs:
           tag: ${{ env.TAG_NAME }}
           name: Build ${{ inputs.target_select }} (${{ env.BUILD_TIME }})
           body: |
-            **Padavan 編譯報告 (Enhanced)**
-            * 機型: ${{ inputs.target_select }}
-            * 時間: ${{ env.BUILD_TIME }}
-            * LAN IP: ${{ env.LANIP }}
-            * 工具鏈: ${{ inputs.toolchain_select }}
+            **Padavan 編譯報告 - Custom-Router-Build-Final-Fix**
+            * **🇹🇼 TW641 Padavan CAKE🍰OpenWrt 25.12 Dave's Guitar🎸開源路由器韌體 與 Dave Täht數位典藏博物館🏛️**: https://TW641.github.io/
+            * **Linux Kernel**: **4.4.198**，大幅領先原廠舊核心。
+            * **專案版本**: Padavan ng CAKE Linux 4.4 (The Dave Täht Tribute Edition) - TW641 的開源專案 | TW641 Padavan CAKE 與 Dave Täht 數位典藏博物館
+            * **專案介紹**: https://TW641.github.io/padavan-4.4/
+            * **🕊️ In Memory of Dave Täht**
+            * **📢 SLOGAN: "The darker the night, the brighter the Täht."**
+            * **📢 Reminder: "When you miss Dave, modprobe sch_cake!"**
+            * **效能解放**：全系列整合 CAKE 流量調度、HWNAT (硬體加速) + SFE (軟體加速)。
+            * **介面優化**：內建繁體中文，並針對 1080P 寬螢幕進行排版優化。
+            * **穩定提升**：4.4 版本採用最穩定的 iproute2-5.12.0 TC + iproute2-5.12.0 IP + Iptables 1.8.7 + 套用 Upstream Patches 與 libmnl 1.0.5 組合，新增 Arptables v0.0.5。
+            * **安全防護**：全面升級 Busybox 1.37.0，修復多個 CVE 高風險漏洞（[SECURITY] CVE-2025-60876 & CVE-2025-46394）。
+            * **padavan-4.4 CI YAML自動化雲端編譯韌體腳本來源**: https://github.com/TW641/padavan-4.4/blob/main/.github/workflows/CI.yml
+            * **padavan-4.4 CI YAML自動化雲端編譯韌體腳本介紹**: https://TW641.github.io/padavan-4.4/
+            * **原始碼來源 Repo**: ${{ env.PADAVAN_REPO }}
+            * **選擇機型**: ${{ inputs.target_select }}
+            * **編譯時間**: ${{ env.BUILD_TIME }} (Taipei Time)
+            * **LAN IP**: ${{ env.LANIP }}
+            * **工具鏈**: ${{ inputs.toolchain_select }}
+            * **User**: ${{ env.SIGNACCOUNT }} / **Pass**: ${{ env.SIGNPASSWORD }}
+            * **WiFi**: ${{ env.WIFI2GSSID }} / ${{ env.WIFI5GSSID }}
             
             ### 包含內容
             * 韌體檔案 (.trx)
