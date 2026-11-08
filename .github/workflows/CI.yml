@@ -1602,12 +1602,12 @@ jobs:
             
       - name: 🏗️-Build-Firmware
         run: |
-          ## 強制替換 squashfs-4.3 Makefile 中的 CFLAGS 參數
-          sed -i 's/CFLAGS += -Wall/CFLAGS += -Wall -Wno-error=incompatible-pointer-types -Wno-error=use-after-free/g' /opt/rt-n56u/trunk/tools/mksquashfs_xz/squashfs-4.3/Makefile
-    
           # 回到主目錄執行原本的編譯流程
           cd /opt/rt-n56u/trunk
           sudo ./clear_tree
+
+          # 透過 make 的命令列參數直接覆蓋 EXTRA_CFLAGS，這樣絕對不會被 sudo 吃掉或被檔案覆蓋蓋過去！
+          sudo make -C tools EXTRA_CFLAGS="-Wno-error=incompatible-pointer-types -Wno-error=use-after-free"
 
           # 修改重點：
           # 1. 2>&1 : 把錯誤訊息 (stderr) 也導向到標準輸出，這樣報錯也會被記錄。
