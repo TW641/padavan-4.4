@@ -1606,8 +1606,8 @@ jobs:
           cd /opt/rt-n56u/trunk
           sudo ./clear_tree
 
-          # 透過 make 的命令列參數直接覆蓋 EXTRA_CFLAGS，這樣絕對不會被 sudo 吃掉或被檔案覆蓋蓋過去！
-          sudo make -C tools EXTRA_CFLAGS="-Wno-error=incompatible-pointer-types -Wno-error=use-after-free"
+          # 透過 sed 直接把忽略警告的參數永久寫死在 squashfs-4.3 的 Makefile 中
+          sudo sed -i '/^CFLAGS +=/s/$/ -Wno-error=incompatible-pointer-types -Wno-error=use-after-free/' tools/mksquashfs_xz/squashfs-4.3/Makefile
 
           # 修改重點：
           # 1. 2>&1 : 把錯誤訊息 (stderr) 也導向到標準輸出，這樣報錯也會被記錄。
