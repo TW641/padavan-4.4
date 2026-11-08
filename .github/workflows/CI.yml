@@ -1602,9 +1602,8 @@ jobs:
             
       - name: 🏗️-Build-Firmware
         run: |
-          # 先對 squashfs 的 Makefile 進行補丁，注入忽略警告參數
-          cd /opt/rt-n56u/trunk/tools/mksquashfs_xz/squashfs-4.3
-          sed -i 's/-Wall/-Wall -Wno-error=incompatible-pointer-types -Wno-error=use-after-free/g' Makefile
+          ## 強制替換 squashfs-4.3 Makefile 中的 CFLAGS 參數
+          sed -i 's/CFLAGS += -Wall/CFLAGS += -Wall -Wno-error=incompatible-pointer-types -Wno-error=use-after-free/g' /opt/rt-n56u/trunk/tools/mksquashfs_xz/squashfs-4.3/Makefile
     
           # 回到主目錄執行原本的編譯流程
           cd /opt/rt-n56u/trunk
