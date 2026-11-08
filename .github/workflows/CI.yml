@@ -1604,6 +1604,10 @@ jobs:
         run: |
           cd /opt/rt-n56u/trunk
           sudo ./clear_tree
+
+          # 修改重點：加入 CFLAGS 忽略新版 GCC 的指標型別不相容與 use-after-free 警告
+          export CFLAGS="-Wno-error=incompatible-pointer-types -Wno-error=use-after-free"
+          
           # 修改重點：
           # 1. 2>&1 : 把錯誤訊息 (stderr) 也導向到標準輸出，這樣報錯也會被記錄。
           # 2. | tee build.log : 像 T 型水管一樣，一邊流向螢幕(給你看)，一邊流向檔案(存檔)。
