@@ -1602,7 +1602,7 @@ jobs:
             
       - name: 🏗️-Build-Firmware
         run: |
-          # 回到主目錄執行原本的編譯流程
+          # 回到主目錄，執行原本的編譯流程
           cd /opt/rt-n56u/trunk
           sudo ./clear_tree
 
